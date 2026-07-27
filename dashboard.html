@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Student Management System</title>
+
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+        <h2>ESMS</h2>
+
+        <ul>
+
+            <li onclick="loadDashboard()">🏠 Dashboard</li>
+
+            <li onclick="loadStudent()">👨‍🎓 Student</li>
+
+            <li onclick="loadAcademic()">📚 Academic Records</li>
+
+            <li onclick="loadAttendance()">📅 Attendance</li>
+
+            <li onclick="loadCertificate()">📜 Certificates</li>
+
+            <li onclick="loadProjects()">💻 Projects</li>
+
+
+
+
+            <li onclick="logout()">🚪 Logout</li>
+
+        </ul>
+
+    </div>
+
+    <!-- Main Section -->
+    <div class="main">
+
+        <!-- Header -->
+        <div class="header">
+
+            <h1>Enterprise Student Management System</h1>
+
+            <h3>Welcome, Student</h3>
+
+        </div>
+
+        <!-- Dynamic Content -->
+        <div class="content" id="content">
+
+            <h2>Dashboard</h2>
+
+            <p>
+                Welcome to Enterprise Student Management System.
+            </p>
+
+            <hr>
+
+            <h3>Quick Overview</h3>
+
+            <div class="cards">
+
+                <div class="card">
+                    <h3>Attendance</h3>
+                    <p>View Attendance Details</p>
+                </div>
+
+                <div class="card">
+                    <h3>Certificates</h3>
+                    <p>View Certificates</p>
+                </div>
+
+                <div class="card">
+                    <h3>Projects</h3>
+                    <p>View GitHub Projects</p>
+                </div>
+
+                <div class="card">
+                    <h3>Rank</h3>
+                    <p>Current Rank</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+<script src="dashboard.js"></script>
+
+</body>
+</html>

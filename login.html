@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Student Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <img src="logo.png" alt="College logo" class="logo">
+        <h1>
+            Enterprise Student  Management System
+        </h1>
+        <h2>
+            Student login
+        </h2>
+        <form>
+            <label>
+                User ID
+            </label>
+            <input type="text" id="username" placeholder="Enter UserID"  >
+            <label>
+                Password
+            </label>
+            <input type="password" id="password" placeholder="Enter Password">
+
+            <div class="show-password">
+                <input type="checkbox" onclick="showPassword()">
+                show Password
+            </div>
+
+            <button type="button" onclick="login()" >Sign In
+            </button>
+        </form>
+        <a href="#" >
+            Forget Password?
+        </a>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
