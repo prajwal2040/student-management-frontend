@@ -142,22 +142,33 @@ function loadAttendance() {
 function loadCertificate() {
 
     fetch(`http://localhost:8087/certificate/student/${studentId}`)
-
     .then(response => response.json())
-
     .then(certificates => {
 
         let html = `
             <h2>Certificate Records</h2>
             <hr>
 
+            <h3>Upload Certificate</h3>
+
+            <input type="file" id="certificateFile" accept=".jpg,.jpeg,.png">
+
+            <button onclick="uploadCertificate()">
+                Upload Certificate
+            </button>
+
+            <br><br>
+
+            <h3>Uploaded Certificates</h3>
+
             <table border="1" cellpadding="10" cellspacing="0">
 
                 <tr>
                     <th>Certificate Name</th>
                     <th>Organization</th>
-                    <th>Level</th>
-                    <th>Points</th>
+                    <th>Course Duration</th>
+                    <th>Issue Date</th>
+                    <th>Action</th>
                 </tr>
         `;
 
@@ -165,31 +176,109 @@ function loadCertificate() {
 
             html += `
                 <tr>
+
                     <td>${certificate.certificateName}</td>
+
                     <td>${certificate.issuingOrganization}</td>
-                    <td>${certificate.certificateLevel}</td>
-                    <td>${certificate.points}</td>
+
+                    <td>${certificate.courseDuration}</td>
+
+                    <td>${certificate.issueDate}</td>
+
+                    <td>
+                        <button onclick="deleteCertificate(${certificate.id})">
+                            Delete
+                        </button>
+                    </td>
+
                 </tr>
             `;
-
         });
 
         html += `</table>`;
 
         document.getElementById("content").innerHTML = html;
-
     })
-
     .catch(error => {
 
         console.error(error);
 
         alert("Unable to fetch Certificate Records");
-
     });
-
 }
+function deleteCertificate(id) {
 
+    if (!confirm("Are you sure you want to delete this certificate?")) {
+        return;
+    }
+
+    fetch(`http://localhost:8087/certificate/${id}`, {
+        method: "DELETE"
+    })
+    .then(response => {
+
+        if (!response.ok) {
+            throw new Error("Delete failed");
+        }
+
+        return response.text();
+    })
+    .then(result => {
+
+        alert(result);
+
+        loadCertificate();
+    })
+    .catch(error => {
+
+        console.error(error);
+
+        alert("Unable to delete certificate.");
+    });
+}
+function uploadCertificate() {
+
+    const fileInput = document.getElementById("certificateFile");
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Please select a certificate file.");
+        return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+    formData.append("studentId", studentId);
+
+    fetch("http://localhost:8087/certificate/gemini-upload", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => {
+
+        if (!response.ok) {
+            throw new Error("Certificate processing failed");
+        }
+
+        return response.json();
+    })
+    .then(certificate => {
+
+        alert("Certificate uploaded and saved successfully!");
+
+        fileInput.value = "";
+
+        // Refresh certificate table
+        loadCertificate();
+    })
+    .catch(error => {
+
+        console.error("Certificate error:", error);
+
+        alert("Certificate upload failed.");
+    });
+}
 function loadProjects() {
 
     fetch(`http://localhost:8087/projects/student/${studentId}`)
@@ -277,7 +366,7 @@ function loadDashboard() {
 
 
             <tr>
-                <th>SGPA</th>
+                <th>CGPA</th>
                 <td>${student.cgpa}</td>
             </tr>
 
@@ -360,7 +449,7 @@ function loadRanking() {
 
             <th>Rank</th>
             <th>Name</th>
-            <th>SGPA</th>
+            <th>CGPA</th>
             <th>Attendance</th>
             <th>Certificates</th>
             <th>Projects</th>
@@ -423,7 +512,255 @@ function loadRanking() {
         alert("Unable to load Ranking");
 
     });
+}
 
+function loadLeetCode() {
+
+    fetch(`http://localhost:8087/leetcode/profile/${studentId}`)
+
+    .then(response => {
+
+        if (response.status === 204) {
+            return null;
+        }
+
+        if (!response.ok) {
+            throw new Error("Unable to fetch LeetCode profile");
+        }
+
+        return response.json();
+
+    })
+
+    .then(profile => {
+
+        // Student does NOT have a LeetCode profile
+        if (profile === null) {
+
+            document.getElementById("content").innerHTML = `
+
+                <h2>LeetCode Solver</h2>
+
+                <hr>
+
+                <h3>Connect Your LeetCode Profile</h3>
+
+                <p>
+                    Enter your LeetCode profile URL to connect your account.
+                </p>
+
+                <input
+                    type="text"
+                    id="leetcodeUrl"
+                    placeholder="Enter LeetCode Profile URL"
+                >
+
+                <button onclick="saveLeetCodeProfile()">
+                    Connect LeetCode
+                </button>
+
+            `;
+
+            return;
+        }
+
+
+        // Student already has a LeetCode profile
+        document.getElementById("content").innerHTML = `
+
+            <h2>LeetCode Solver</h2>
+
+            <hr>
+
+            <h3>My LeetCode Profile</h3>
+
+            <p>
+                <b>Username:</b> ${profile.leetcodeUsername}
+            </p>
+
+            <p>
+                <b>Profile:</b>
+
+                <a href="${profile.profileUrl}" target="_blank">
+                    View LeetCode Profile
+                </a>
+            </p>
+
+            <hr>
+
+            <h3>LeetCode Statistics</h3>
+
+            <div id="leetcodeStats">
+
+                <p>Loading statistics...</p>
+
+            </div>
+
+            <button onclick="refreshLeetCodeStats()">
+                Refresh Statistics
+            </button>
+
+        `;
+
+        refreshLeetCodeStats();
+
+    })
+
+    .catch(error => {
+
+        console.error("LeetCode profile error:", error);
+
+        alert("Unable to load LeetCode profile.");
+
+    });
 
 }
 
+function saveLeetCodeProfile() {
+
+    const profileUrl =
+        document.getElementById("leetcodeUrl").value.trim();
+
+    if (profileUrl === "") {
+
+        alert("Please enter your LeetCode profile URL.");
+
+        return;
+    }
+
+
+    // Extract username from LeetCode URL
+    const parts = profileUrl.split("/");
+
+    const username = parts[parts.length - 1];
+
+    if (username === "") {
+
+        alert("Invalid LeetCode profile URL.");
+
+        return;
+    }
+
+
+    const profile = {
+
+        studentId: studentId,
+
+        leetcodeUsername: username,
+
+        profileUrl: profileUrl
+
+    };
+
+
+    fetch("http://localhost:8087/leetcode/profile", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(profile)
+
+    })
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error("Failed to save LeetCode profile");
+
+        }
+
+        return response.json();
+
+    })
+
+    .then(savedProfile => {
+
+        alert("LeetCode profile connected successfully!");
+
+        // Reload LeetCode module
+        loadLeetCode();
+
+    })
+
+    .catch(error => {
+
+        console.error("LeetCode profile error:", error);
+
+        alert("Unable to connect LeetCode profile.");
+
+    });
+
+}
+function refreshLeetCodeStats() {
+
+    fetch(`http://localhost:8087/leetcode/profile/${studentId}`)
+
+    .then(response => {
+
+        if (!response.ok) {
+            throw new Error("Unable to fetch profile");
+        }
+
+        return response.json();
+
+    })
+
+    .then(profile => {
+
+        return fetch(
+            `http://localhost:8087/leetcode/stats/${profile.leetcodeUsername}`
+        );
+
+    })
+
+    .then(response => {
+
+        if (!response.ok) {
+            throw new Error("Unable to fetch statistics");
+        }
+
+        return response.json();
+
+    })
+
+    .then(stats => {
+
+        console.log("LeetCode Stats:", stats);
+
+        document.getElementById("leetcodeStats").innerHTML = `
+
+            <p>
+                <b>Total Solved:</b> ${stats.totalSolved}
+            </p>
+
+            <p>
+                <b>Easy:</b> ${stats.easySolved}
+            </p>
+
+            <p>
+                <b>Medium:</b> ${stats.mediumSolved}
+            </p>
+
+            <p>
+                <b>Hard:</b> ${stats.hardSolved}
+            </p>
+
+        `;
+
+    })
+
+    .catch(error => {
+
+        console.error("LeetCode statistics error:", error);
+
+        document.getElementById("leetcodeStats").innerHTML = `
+            <p>Unable to load LeetCode statistics.</p>
+        `;
+
+    });
+
+}
